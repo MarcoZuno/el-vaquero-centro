@@ -1,0 +1,1124 @@
+<!--
+  Plantilla del Panel de consulta financiera — Taquería El Vaquero
+  ----------------------------------------------------------------
+  Estética: retro artesanal sonorense, fondo hueso tipo papel,
+  decorativos sutiles tipo serigrafía. Logo embebido en base64 para
+  que el archivo sea autocontenido y se pueda subir tal cual a
+  GitHub Pages. Listo para guardarse como panel-MES-AAAA.html.
+
+  Placeholders {{...}} los reemplaza el skill al generar cada mes.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Vaquero · Panel financiero · Mayo 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&family=Playfair+Display:wght@400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --hueso: #F1E5CC;
+      --hueso-claro: #F8EFD9;
+      --hueso-oscuro: #E5D5B3;
+      --terracota: #A8412B;
+      --terracota-oscuro: #7A2E1E;
+      --mostaza: #D4A038;
+      --nopal: #5C8745;
+      --mezquite: #3D2817;
+      --mezquite-claro: #5A3B22;
+      --tinta: #2A1A0E;
+      --gris: #6B5E54;
+      --gris-claro: #C9BBA7;
+      --rojo-alerta: #B33A2A;
+      --verde-ok: #4F7A3A;
+      --amarillo-medio: #C8932E;
+      --sombra: 0 6px 18px rgba(61, 40, 23, 0.12);
+      --sombra-suave: 0 2px 8px rgba(61, 40, 23, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    /* Fondo hueso con textura sutil tipo papel/serigrafía */
+    body {
+      margin: 0;
+      font-family: 'Playfair Display', Georgia, serif;
+      background: var(--hueso);
+      background-image:
+        /* puntitos tipo serigrafía */
+        radial-gradient(circle at 20% 30%, rgba(61, 40, 23, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 70% 60%, rgba(168, 65, 43, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 40% 80%, rgba(61, 40, 23, 0.03) 1px, transparent 1px),
+        /* gradiente sutil */
+        linear-gradient(180deg, var(--hueso-claro) 0%, var(--hueso) 100%);
+      background-size: 40px 40px, 60px 60px, 50px 50px, 100% 100%;
+      color: var(--tinta);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ============= HEADER con logo grande centrado ============= */
+    header.panel-header {
+      position: relative;
+      background: var(--mezquite);
+      background-image:
+        radial-gradient(circle at 25% 50%, rgba(212, 160, 56, 0.08) 1px, transparent 2px),
+        radial-gradient(circle at 75% 50%, rgba(212, 160, 56, 0.06) 1px, transparent 2px),
+        linear-gradient(135deg, var(--mezquite) 0%, var(--mezquite-claro) 100%);
+      background-size: 30px 30px, 35px 35px, 100% 100%;
+      color: var(--hueso-claro);
+      padding: 22px 24px 20px;
+      text-align: center;
+      border-bottom: 4px double var(--mostaza);
+      overflow: hidden;
+    }
+
+    /* Saguaros decorativos a los lados del header (SVG inline) */
+    header.panel-header::before,
+    header.panel-header::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 80px;
+      opacity: 0.18;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 130'><path d='M35 5 Q45 5 45 18 L45 50 Q45 45 55 45 Q65 45 65 55 L65 75 Q65 80 60 80 L55 80 Q50 80 50 75 L50 60 L45 60 L45 110 Q45 125 35 125 Q25 125 25 110 L25 70 Q25 65 20 65 L15 65 Q10 65 10 60 L10 40 Q10 32 18 32 Q25 32 25 40 L25 50 L25 18 Q25 5 35 5 Z' fill='%23F1E5CC'/></svg>");
+    }
+    header.panel-header::before { left: 18px; }
+    header.panel-header::after { right: 18px; transform: translateY(-50%) scaleX(-1); }
+
+    .header-sucursal {
+      font-family: 'Rye', serif;
+      font-size: 30px;
+      letter-spacing: 1.5px;
+      color: var(--mostaza);
+      text-shadow: 2px 2px 0 var(--terracota-oscuro);
+      margin: 0 0 14px;
+      position: relative;
+      z-index: 2;
+      line-height: 1.1;
+    }
+
+    .header-title {
+      font-family: 'Rye', serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      margin: 6px 0 0;
+      color: var(--hueso-claro);
+      text-shadow: 2px 2px 0 var(--terracota-oscuro);
+      position: relative;
+      z-index: 2;
+    }
+
+    .header-periodo {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px 16px;
+      background: var(--mostaza);
+      color: var(--mezquite);
+      border-radius: 0;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 3px;
+      border: 2px solid var(--mezquite);
+      box-shadow: 3px 3px 0 var(--terracota-oscuro);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Badge "EN CURSO" para paneles parciales */
+    .badge-en-curso {
+      display: inline-block;
+      margin-top: 8px;
+      margin-left: 8px;
+      padding: 4px 14px;
+      background: var(--rojo-alerta);
+      color: var(--hueso-claro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      border: 2px solid var(--hueso-claro);
+      box-shadow: 2px 2px 0 var(--mezquite);
+      position: relative;
+      z-index: 2;
+    }
+    .badge-en-curso::before {
+      content: '● ';
+      animation: pulse-dot 1.4s ease-in-out infinite;
+      display: inline-block;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Sección de cancelaciones / errores de captura */
+    .cancelaciones-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .cancelaciones-stat {
+      text-align: center;
+      padding: 16px;
+      background: var(--hueso);
+      border: 1px solid var(--hueso-oscuro);
+      border-radius: 6px;
+    }
+    .cancelaciones-stat .num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      color: var(--terracota);
+      letter-spacing: 1px;
+    }
+    .cancelaciones-stat .lbl {
+      font-family: 'Special Elite', monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--gris);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .razones-tabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .razones-tabla th, .razones-tabla td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px dashed var(--hueso-oscuro);
+    }
+    .razones-tabla th {
+      background: var(--mezquite);
+      color: var(--mostaza);
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
+      font-size: 12px;
+    }
+    .razones-tabla td.numero {
+      text-align: right;
+      font-family: 'Special Elite', monospace;
+    }
+    @media (max-width: 700px) {
+      .cancelaciones-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ============= BARRA DE MESES ============= */
+    nav.meses-nav {
+      background: var(--hueso-oscuro);
+      border-bottom: 3px solid var(--mezquite);
+      padding: 12px 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: var(--sombra-suave);
+    }
+
+    nav.meses-nav ul {
+      list-style: none;
+      margin: 0 auto;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      max-width: 1100px;
+      min-width: max-content;
+    }
+
+    nav.meses-nav li {
+      flex: 1;
+      min-width: 70px;
+    }
+
+    nav.meses-nav a,
+    nav.meses-nav span {
+      display: block;
+      text-align: center;
+      padding: 10px 6px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 2px;
+      color: var(--mezquite);
+      text-decoration: none;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    nav.meses-nav a:hover {
+      background: var(--mostaza);
+      border-color: var(--mezquite);
+      color: var(--mezquite);
+    }
+
+    /* Mes activo (el del panel actual) */
+    nav.meses-nav .activo {
+      background: var(--terracota);
+      color: var(--hueso-claro);
+      border-color: var(--mezquite);
+      box-shadow: 2px 2px 0 var(--mezquite);
+      font-weight: bold;
+    }
+
+    /* Mes sin datos (tachado) */
+    nav.meses-nav .tachado {
+      color: var(--gris-claro);
+      cursor: not-allowed;
+      pointer-events: none;
+      position: relative;
+    }
+
+    nav.meses-nav .tachado::after {
+      content: '';
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 50%;
+      height: 2px;
+      background: var(--gris);
+      transform: rotate(-8deg);
+    }
+
+    /* Mes futuro (sin panel todavía) */
+    nav.meses-nav .futuro {
+      color: var(--gris);
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+      font-style: italic;
+    }
+
+    /* ============= MAIN ============= */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    section {
+      background: var(--hueso-claro);
+      border: 1px solid var(--hueso-oscuro);
+      border-radius: 6px;
+      padding: 28px 24px 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--sombra);
+      position: relative;
+    }
+
+    /* Esquinas tipo papel viejo recortado (decorativos serigrafía) */
+    section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--terracota) 0,
+        var(--terracota) 14px,
+        transparent 14px,
+        transparent 22px
+      );
+    }
+
+    section h2 {
+      margin: 0 0 18px;
+      font-family: 'Rye', serif;
+      color: var(--terracota);
+      font-size: 22px;
+      letter-spacing: 0.5px;
+      padding-bottom: 10px;
+      border-bottom: 2px dashed var(--mostaza);
+    }
+
+    /* ============= TARJETAS KPI ============= */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .kpi {
+      padding: 22px 20px;
+      border-radius: 6px;
+      text-align: center;
+      color: var(--hueso-claro);
+      position: relative;
+      overflow: hidden;
+      border: 3px solid var(--mezquite);
+      box-shadow: 5px 5px 0 var(--mezquite);
+    }
+
+    .kpi::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px dashed rgba(255,255,255,0.3);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .kpi.ventas { background: var(--nopal); }
+    .kpi.egresos { background: var(--terracota); }
+    .kpi.utilidad { background: var(--mostaza); color: var(--mezquite); }
+
+    .kpi .etiqueta {
+      font-family: 'Special Elite', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+
+    .kpi .valor {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+
+    .kpi .extra {
+      font-family: 'Special Elite', monospace;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    /* ============= SEMÁFORO ============= */
+    .semaforo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .luces {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px;
+      background: var(--mezquite);
+      border-radius: 12px;
+      border: 3px solid var(--mezquite-claro);
+      box-shadow: var(--sombra);
+    }
+
+    .luz {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #2a1a0e;
+      border: 3px solid #1a0e06;
+      transition: all 0.3s;
+    }
+
+    .luz.activa.rojo { background: var(--rojo-alerta); box-shadow: 0 0 30px var(--rojo-alerta), inset 0 0 12px rgba(255,255,255,0.3); }
+    .luz.activa.amarillo { background: var(--mostaza); box-shadow: 0 0 30px var(--mostaza), inset 0 0 12px rgba(255,255,255,0.3); }
+    .luz.activa.verde { background: var(--verde-ok); box-shadow: 0 0 30px var(--verde-ok), inset 0 0 12px rgba(255,255,255,0.3); }
+
+    .estado-texto {
+      flex: 1;
+      min-width: 240px;
+      text-align: left;
+    }
+
+    .estado-texto .estado {
+      font-family: 'Rye', serif;
+      font-size: 26px;
+      color: var(--terracota);
+      margin: 0 0 8px;
+    }
+
+    .estado-texto p {
+      margin: 0;
+      color: var(--gris);
+      font-size: 15px;
+    }
+
+    /* ============= RECOMENDACIONES ============= */
+    .recomendaciones {
+      display: grid;
+      gap: 14px;
+    }
+
+    .reco {
+      border-left: 8px solid var(--gris-claro);
+      padding: 16px 18px;
+      background: var(--hueso);
+      border-radius: 4px;
+      border-top: 1px solid var(--hueso-oscuro);
+      border-right: 1px solid var(--hueso-oscuro);
+      border-bottom: 1px solid var(--hueso-oscuro);
+      position: relative;
+    }
+
+    .reco.prioritario { border-left-color: var(--rojo-alerta); }
+    .reco.medio { border-left-color: var(--amarillo-medio); }
+    .reco.bajo { border-left-color: var(--verde-ok); }
+
+    .reco .nivel {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 0;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--hueso-claro);
+      margin-bottom: 10px;
+      border: 2px solid var(--mezquite);
+    }
+
+    .reco.prioritario .nivel { background: var(--rojo-alerta); }
+    .reco.medio .nivel { background: var(--amarillo-medio); color: var(--mezquite); }
+    .reco.bajo .nivel { background: var(--verde-ok); }
+
+    .reco h3 {
+      margin: 0 0 6px;
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      color: var(--tinta);
+      font-weight: 700;
+    }
+
+    .reco p {
+      margin: 0;
+      color: var(--gris);
+      font-size: 14px;
+    }
+
+    .reco .dato {
+      display: inline-block;
+      margin-top: 8px;
+      font-family: 'Special Elite', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--terracota);
+      padding: 2px 8px;
+      background: rgba(168, 65, 43, 0.08);
+      border-radius: 3px;
+    }
+
+    /* ============= MEJOR / PEOR PERIODO ============= */
+    .periodos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .periodo-box {
+      padding: 20px;
+      border-radius: 6px;
+      text-align: center;
+      border: 2px solid var(--mezquite);
+      box-shadow: 4px 4px 0 var(--mezquite);
+    }
+
+    .periodo-box.mejor { background: rgba(92, 135, 69, 0.18); }
+    .periodo-box.peor { background: rgba(179, 58, 42, 0.15); }
+
+    .periodo-box .titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .periodo-box.mejor .titulo { color: var(--verde-ok); }
+    .periodo-box.peor .titulo { color: var(--rojo-alerta); }
+
+    .periodo-box .valor {
+      font-family: 'Rye', serif;
+      font-size: 22px;
+      margin-bottom: 6px;
+      color: var(--mezquite);
+    }
+
+    .periodo-box .nota {
+      font-size: 13px;
+      color: var(--gris);
+      font-family: 'Special Elite', monospace;
+    }
+
+    /* ============= TABLAS ============= */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      font-family: 'Playfair Display', serif;
+    }
+
+    table th, table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--hueso-oscuro);
+    }
+
+    table th {
+      background: var(--mezquite);
+      color: var(--mostaza);
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+
+    table tbody tr:nth-child(even) {
+      background: var(--hueso);
+    }
+
+    table td.numero {
+      text-align: right;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      font-family: 'Special Elite', monospace;
+    }
+
+    table td.posicion {
+      font-family: 'Rye', serif;
+      color: var(--terracota);
+      font-size: 16px;
+      width: 40px;
+    }
+
+    /* ============= DESGLOSE GASTOS ============= */
+    .gastos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .gasto-cat {
+      background: var(--hueso);
+      border-radius: 4px;
+      padding: 18px;
+      border: 1px solid var(--hueso-oscuro);
+      border-top: 4px solid var(--terracota);
+    }
+
+    .gasto-cat h4 {
+      margin: 0 0 12px;
+      color: var(--terracota);
+      font-family: 'Rye', serif;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    .gasto-cat .total {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      color: var(--mezquite);
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .gasto-cat ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-family: 'Special Elite', monospace;
+      font-size: 13px;
+    }
+
+    .gasto-cat li {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dotted var(--gris-claro);
+    }
+
+    .gasto-cat li:last-child { border-bottom: none; }
+
+    /* ============= GRÁFICA ============= */
+    .grafica-wrap {
+      position: relative;
+      height: 340px;
+      background: white;
+      border-radius: 6px;
+      padding: 14px;
+      border: 1px solid var(--hueso-oscuro);
+    }
+
+    /* ============= ANÁLISIS DE NÓMINA ============= */
+    .nomina-analisis {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .nomina-resumen {
+      background: var(--mezquite);
+      color: var(--hueso-claro);
+      padding: 22px 20px;
+      border-radius: 6px;
+      text-align: center;
+      border: 3px solid var(--mezquite);
+      box-shadow: 5px 5px 0 var(--terracota-oscuro);
+    }
+
+    .nomina-resumen .etiqueta {
+      font-family: 'Special Elite', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-bottom: 8px;
+    }
+
+    .nomina-resumen .monto {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 34px;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .nomina-resumen .ratio {
+      font-family: 'Rye', serif;
+      font-size: 22px;
+      color: var(--mostaza);
+      margin: 8px 0 4px;
+    }
+
+    .nomina-resumen .ratio-label {
+      font-size: 12px;
+      font-family: 'Special Elite', monospace;
+      opacity: 0.85;
+    }
+
+    .nomina-resumen .veredicto {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 14px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px;
+      letter-spacing: 2px;
+      border: 2px solid var(--mostaza);
+      color: var(--mostaza);
+      border-radius: 0;
+    }
+
+    .nomina-resumen .veredicto.saludable { color: var(--verde-ok); border-color: var(--verde-ok); background: rgba(79, 122, 58, 0.12); }
+    .nomina-resumen .veredicto.alta { color: var(--rojo-alerta); border-color: var(--rojo-alerta); background: rgba(179, 58, 42, 0.12); }
+    .nomina-resumen .veredicto.baja { color: var(--mostaza); border-color: var(--mostaza); }
+
+    .nomina-acciones {
+      display: grid;
+      gap: 12px;
+    }
+
+    .accion-item {
+      background: var(--hueso);
+      border: 1px solid var(--hueso-oscuro);
+      border-left: 6px solid var(--terracota);
+      padding: 14px 16px;
+      border-radius: 4px;
+    }
+
+    .accion-item h4 {
+      margin: 0 0 4px;
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--tinta);
+    }
+
+    .accion-item p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--gris);
+    }
+
+    .accion-item.positivo { border-left-color: var(--verde-ok); }
+    .accion-item.atencion { border-left-color: var(--mostaza); }
+
+    @media (max-width: 700px) {
+      .nomina-analisis { grid-template-columns: 1fr; }
+    }
+
+    /* ============= FOOTER ============= */
+    footer.panel-footer {
+      text-align: center;
+      padding: 30px 16px 40px;
+      color: var(--gris);
+      font-family: 'Special Elite', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      background: var(--hueso-oscuro);
+      border-top: 4px double var(--mezquite);
+      margin-top: 30px;
+    }
+
+    footer.panel-footer .firma {
+      font-family: 'Rye', serif;
+      color: var(--terracota);
+      font-size: 16px;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    /* ============= RESPONSIVE ============= */
+    @media (max-width: 700px) {
+      header.panel-header { padding: 18px 16px 16px; }
+      header.panel-header::before, header.panel-header::after { display: none; }
+      .header-title { font-size: 18px; }
+      .header-sucursal { font-size: 13px; letter-spacing: 2px; }
+      .periodos { grid-template-columns: 1fr; }
+      .kpi .valor { font-size: 30px; }
+      section { padding: 22px 16px 18px; }
+      section h2 { font-size: 18px; }
+      nav.meses-nav ul { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============= HEADER ============= -->
+  <header class="panel-header">
+    <div class="header-sucursal">El Vaquero · Calle 11 (Centro)</div>
+<h1 class="header-title">Panel de Consulta Financiera</h1>
+    <div class="header-periodo">Mayo 2026</div>
+    <div class="badge-en-curso">EN CURSO · DEL 1 AL 11</div>
+  </header>
+
+  <!-- ============= BARRA DE MESES ============= -->
+  <nav class="meses-nav" aria-label="Navegación entre meses">
+    <ul>
+      <li><span class="tachado" title="Sin información">Ene</span></li>
+      <li><span class="tachado" title="Sin información">Feb</span></li>
+      <li><span class="tachado" title="Sin información">Mar</span></li>
+      <li><a href="panel-abril-2026.html" style="text-decoration:none;"><span class="">Abr</span></a></li>
+      <li><span class="activo">May</span></li>
+      <li><span class="futuro">Jun</span></li>
+      <li><span class="futuro">Jul</span></li>
+      <li><span class="futuro">Ago</span></li>
+      <li><span class="futuro">Sep</span></li>
+      <li><span class="futuro">Oct</span></li>
+      <li><span class="futuro">Nov</span></li>
+      <li><span class="futuro">Dic</span></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- 1. KPIs -->
+    <section>
+      <h2>Resumen del mes</h2>
+      <div class="kpis">
+        <div class="kpi ventas">
+          <div class="etiqueta">Venta total bruta</div>
+          <div class="valor">$349,861.47</div>
+          <div class="extra">4,499 unidades vendidas tickets</div>
+        </div>
+        <div class="kpi egresos">
+          <div class="etiqueta">Egresos</div>
+          <div class="valor">$271,592.89</div>
+          <div class="extra">77.6% de las ventas</div>
+        </div>
+        <div class="kpi utilidad">
+          <div class="etiqueta">Utilidad real</div>
+          <div class="valor">$78,268.58</div>
+          <div class="extra">Margen: 22.37%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Semáforo -->
+    <section>
+      <h2>¿En dónde estamos parados?</h2>
+      <div class="semaforo">
+        <div class="luces">
+          <div class="luz  rojo"></div>
+          <div class="luz activa amarillo"></div>
+          <div class="luz  verde"></div>
+        </div>
+        <div class="estado-texto">
+          <p class="estado">Buen ritmo, pero el mes aún no cierra</p>
+          <p>En los primeros 11 días el margen va en 22.37%, por encima del piso saludable de 15%. PERO el dato es preliminar: falta la nómina de la segunda quincena, CFE, y posibles transferencias pendientes (Importadora y Distribuidora aún no aparece). Esperar al cierre para conclusiones firmes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Recomendaciones -->
+    <section>
+      <h2>Recomendaciones del periodo</h2>
+      <div class="recomendaciones">
+        <div class="reco medio">
+          <span class="nivel">MEDIO</span>
+          <h3>Margen va bien, pero hay pagos del mes pendientes</h3>
+          <p>Ventas $349,861 contra egresos $271,593 dan utilidad preliminar $78,269. Sin embargo, falta la nómina de la segunda quincena (~$78K esperado), CFE (pendiente desde abril) y posibles transferencias a Importadora y Distribuidora. Mantener disciplina y no relajar control hasta cierre.</p>
+          <span class="dato">Margen parcial: 22.37% (datos hasta día 11)</span>
+        </div>
+        <div class="reco medio">
+          <span class="nivel">MEDIO</span>
+          <h3>Cárnicos bajaron a 43% del egreso (vs 47.8% en abril)</h3>
+          <p>La concentración de cárnicos mejoró ligeramente. Aparece SIGMA FOODSERVICE ($24,997) como nuevo proveedor de arrachera junto a Pipila. Aprovechar para comparar precio/calidad entre ambos y crear palanca de negociación.</p>
+          <span class="dato">Cárnicos: $117,060 (43.1%)</span>
+        </div>
+        <div class="reco bajo">
+          <span class="nivel">BAJO</span>
+          <h3>Descuentos del periodo en línea con abril</h3>
+          <p>99 tickets con descuento por $16,122 (4.6% de ventas). Ritmo similar al de abril (4.9%). Sigue pendiente formalizar política de cortesías para el equipo de piso.</p>
+          <span class="dato">99 tickets · $16,122 absorbidos (4.6% de ventas)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Gráfica ingresos vs gastos -->
+    <section>
+      <h2>Ingresos vs Gastos a lo largo del mes</h2>
+      <div class="grafica-wrap">
+        <canvas id="graficaIngresosGastos"></canvas>
+      </div>
+    </section>
+
+<!-- 6. Top vendidos -->
+    <section>
+      <h2>Productos más vendidos</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Producto</th><th>Unidades</th><th>Ingreso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class='posicion'>1</td><td>Taco de Picaña (Harina)</td><td class='numero'>739</td><td class='numero'>$81,506.23</td></tr>
+          <tr><td class='posicion'>2</td><td>Taco de Rib Eye (Harina)</td><td class='numero'>475</td><td class='numero'>$54,050.01</td></tr>
+          <tr><td class='posicion'>3</td><td>Taco de Arrachera (Harina)</td><td class='numero'>375</td><td class='numero'>$34,152.48</td></tr>
+          <tr><td class='posicion'>4</td><td>Taco New York Harina</td><td class='numero'>188</td><td class='numero'>$20,556.25</td></tr>
+          <tr><td class='posicion'>5</td><td>Taco de Picaña (Maíz)</td><td class='numero'>181</td><td class='numero'>$17,393.75</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 7. Top margen -->
+    <section>
+      <h2>Productos con mayor margen de ganancia</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Producto</th><th>Margen unitario</th><th>Margen %</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class='posicion'>1</td><td>Coca Cola Regular (194 uds)</td><td class='numero'>~$22.50</td><td class='numero'>~75%</td></tr>
+          <tr><td class='posicion'>2</td><td>Extra: Con Queso (219 uds)</td><td class='numero'>~$17.50</td><td class='numero'>~80%</td></tr>
+          <tr><td class='posicion'>3</td><td>Extra: Con Tuétano (128 uds)</td><td class='numero'>~$40.00</td><td class='numero'>~80%</td></tr>
+          <tr><td class='posicion'>4</td><td>Agua de Jamaica (88 uds)</td><td class='numero'>~$30.50</td><td class='numero'>~80%</td></tr>
+          <tr><td class='posicion'>5</td><td>Carta Blanca (165 uds)</td><td class='numero'>~$22.00</td><td class='numero'>~40%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8. Desglose gastos -->
+    <section>
+      <h2>Desglose de gastos</h2>
+      <div class="gastos-grid">
+        <div class="gasto-cat">
+          <h4>Insumos</h4>
+          <div class="total">$181,287.80</div>
+          <ul>
+            <li><span>Carnes</span><span>$117,059.64</span></li>
+            <li><span>Tortillas</span><span>$10,197.00</span></li>
+            <li><span>Frutas y verduras</span><span>$13,103.60</span></li>
+            <li><span>Abarrotes</span><span>$911.36</span></li>
+            <li><span>Bebidas (refrescos / cervezas)</span><span>$20,121.20</span></li>
+            <li><span>Aguas frescas</span><span>$9,774.00</span></li>
+            <li><span>Carbón</span><span>$6,413.00</span></li>
+            <li><span>Desechables</span><span>$3,661.00</span></li>
+            <li><span>Hielo</span><span>$47.00</span></li>
+          </ul>
+        </div>
+        <div class="gasto-cat">
+          <h4>Servicios</h4>
+          <div class="total">$2,578.80</div>
+          <ul>
+            <li><span>Agua</span><span>$0.00 (pendiente)</span></li>
+            <li><span>Luz</span><span>$0.00 (pendiente CFE)</span></li>
+            <li><span>Gas</span><span>$1,500.00</span></li>
+            <li><span>POS / Soporte SoftRestaurant</span><span>$1,078.80</span></li>
+          </ul>
+        </div>
+        <div class="gasto-cat">
+          <h4>Nómina</h4>
+          <div class="total">$78,785.71</div>
+          <ul>
+            <li><span>Nómina 1ª quincena</span><span>$78,785.71</span></li>
+            <li style='color:#6B5E54; font-style:italic;'><span>Nómina 2ª quincena</span><span>pendiente</span></li>
+          </ul>
+        </div>
+        <div class="gasto-cat">
+          <h4>Mantenimiento y otros</h4>
+          <div class="total">$8,940.58</div>
+          <ul>
+            <li><span>Mantenimiento del local</span><span>$0.00</span></li>
+            <li><span>Planta de luz / equipo</span><span>$0.00</span></li>
+            <li><span>Combustible</span><span>$0.00</span></li>
+            <li><span>Papelería e impresión</span><span>$0.00</span></li>
+            <li><span>Limpieza adicional</span><span>$985.93</span></li>
+            <li><span>Compras especiales y eventos</span><span>$7,050.00</span></li>
+            <li><span>Otros varios</span><span>$904.65 (Becktrop Mileni)</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Análisis de nómina -->
+    <section>
+      <h2>Análisis de nómina — ¿necesitamos ajuste?</h2>
+      <div class="nomina-analisis">
+        <div class="nomina-resumen">
+          <div class="etiqueta">Nómina del mes</div>
+          <div class="monto">$78,785.71</div>
+          <div class="ratio">22.5%</div>
+          <div class="ratio-label">de las ventas del mes</div>
+          <div class="veredicto saludable">SALUDABLE</div>
+        </div>
+        <div class="nomina-acciones">
+          <div class="accion-item positivo">
+            <h4>1 · Nómina 1ª quincena en 22.5% de ventas</h4>
+            <p>$78,786 representan 22.5% de las ventas parciales — sigue dentro del rango saludable (típico 25-35%). Cuando entre la 2ª quincena el ratio puede subir, pero las ventas también deberían crecer en proporción.</p>
+          </div>
+          <div class="accion-item">
+            <h4>2 · Documentar nómina por empleado y turno (sigue pendiente)</h4>
+            <p>Sigue el mismo pendiente del cierre de abril. Tener desglose por persona y por turno facilita decisiones operativas sin tocar el monto total.</p>
+          </div>
+          <div class="accion-item">
+            <h4>3 · Evaluar SIGMA vs PIPILA en próximas semanas</h4>
+            <p>Mayo trae a Sigma Foodservice como nuevo proveedor de arrachera. Comparar precio/calidad/servicio con Pipila para decidir si conviene quedarse con uno solo o seguir con ambos como palanca de negociación.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+        <!-- Sección informativa: cancelaciones / errores de captura -->
+    <section>
+      <h2>Cancelaciones y errores de captura del periodo</h2>
+      <p style="margin:0 0 14px; color: var(--gris); font-size: 14px;">Reporte del POS que muestra productos cancelados antes de cierre de ticket. Suma baja (0.67% de ventas), pero útil monitorear.</p>
+      <div class="cancelaciones-grid">
+        <div class="cancelaciones-stat">
+          <div class="num">12</div>
+          <div class="lbl">Cuentas con cancelación</div>
+        </div>
+        <div class="cancelaciones-stat">
+          <div class="num">28</div>
+          <div class="lbl">Productos cancelados</div>
+        </div>
+        <div class="cancelaciones-stat">
+          <div class="num">$2,355</div>
+          <div class="lbl">Monto cancelado</div>
+        </div>
+      </div>
+      <table class="razones-tabla">
+        <thead>
+          <tr><th>Razón</th><th style="text-align:right;">Monto</th><th style="text-align:right;">% del total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Error de captura</td><td class="numero">$1,399.60</td><td class="numero">59%</td></tr>
+          <tr><td>Cambio de opinión del cliente</td><td class="numero">$855.00</td><td class="numero">36%</td></tr>
+          <tr><td>(Sin razón anotada)</td><td class="numero">$100.00</td><td class="numero">4%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+
+  </main>
+
+  <footer class="panel-footer">
+    <div class="firma">★ Tacos El Vaquero II ★</div>
+    <div>Calle 11 8296, Zona Centro, 22000 Tijuana, B.C.</div>
+    <div style="margin-top:6px; font-size:11px; opacity:0.85;">Generado automáticamente · Documento de uso interno</div>
+  </footer>
+
+  <script>
+    const labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
+    const ingresosData = [44725, 42086, 32309, 25727, 29114, 20331, 23512, 44813, 35956, 27014, 24274.47];
+    const gastosData = [103633.3, 10808.48, 7335, 48882.3, 19161.33, 16932.58, 47012.25, 7544.95, 6328.7, 0, 3954.0];
+
+    new Chart(document.getElementById('graficaIngresosGastos'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Ingresos',
+            data: ingresosData,
+            borderColor: '#5C8745',
+            backgroundColor: 'rgba(92, 135, 69, 0.18)',
+            tension: 0.3,
+            fill: true,
+            borderWidth: 3,
+            pointBackgroundColor: '#5C8745',
+            pointBorderColor: '#3D2817',
+            pointRadius: 4
+          },
+          {
+            label: 'Gastos',
+            data: gastosData,
+            borderColor: '#A8412B',
+            backgroundColor: 'rgba(168, 65, 43, 0.15)',
+            tension: 0.3,
+            fill: true,
+            borderWidth: 3,
+            pointBackgroundColor: '#A8412B',
+            pointBorderColor: '#3D2817',
+            pointRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { left: 6, right: 10, top: 4, bottom: 4 } },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              font: { family: 'Bebas Neue', size: 14 },
+              color: '#3D2817'
+            }
+          },
+          tooltip: {
+            backgroundColor: '#3D2817',
+            titleFont: { family: 'Bebas Neue' },
+            bodyFont: { family: 'Special Elite' },
+            callbacks: {
+              label: (ctx) => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es-MX')
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(61, 40, 23, 0.06)' },
+            ticks: { font: { family: 'Special Elite' }, color: '#3D2817' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(61, 40, 23, 0.06)' },
+            ticks: {
+              font: { family: 'Special Elite' },
+              color: '#3D2817',
+              padding: 6,
+              callback: function(v) {
+                if (v >= 1000) return '$' + (v/1000).toFixed(0) + 'K';
+                return '$' + v;
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
